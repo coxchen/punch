@@ -18,7 +18,8 @@
                  [org.danielsz/system "0.4.1"]
                  [org.clojure/tools.namespace "0.2.11"]
                  [http-kit "2.3.0"]
-                 [re-frame "0.10.5"]]
+                 [re-frame "0.10.5"]
+                 [cljsjs/semantic-ui-react "0.78.2-0"]]
 
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-environ "1.1.0"]]

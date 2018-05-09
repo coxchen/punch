@@ -9,6 +9,7 @@
 /log/
 /out/
 /resources/public/js/compiled/**
+/resources/public/bower_components/
 /target/
 figwheel_server.log
 pom.xml

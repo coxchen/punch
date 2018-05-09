@@ -1,0 +1,20 @@
+{
+  "name": "punch",
+  "version": "0.1.0",
+  "authors": [
+    "Cox Chen <coxchen@gmail.com>"
+  ],
+  "description": "punch",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "resources/public/bower_components/",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "semantic": "semantic-ui#^2.3.1"
+  }
+}
