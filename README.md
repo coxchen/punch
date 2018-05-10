@@ -1,5 +1,10 @@
 # punch
 
+## Prerequisites
+
+- Download the [Leiningen script](https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein) and put it on the $PATH
+- git clone this repository
+- cd into the repository folder and execute `bower install` to fetch *semantic-ui*
 
 ## Development
 
@@ -27,29 +32,9 @@ seconds.`, you're ready to go. Browse to `http://localhost:10555` and enjoy.
 **Attention: It is not needed to run `lein figwheel` separately. Instead `(go)`
 launches Figwheel directly from the REPL**
 
-## Trying it out
-
-If all is well you now have a browser window saying 'Hello Chestnut',
-and a REPL prompt that looks like `cljs.user=>`.
-
-Open `resources/public/css/style.css` and change some styling of the
-H1 element. Notice how it's updated instantly in the browser.
-
-Open `src/cljs/punch/core.cljs`, and change `dom/h1` to
-`dom/h2`. As soon as you save the file, your browser is updated.
-
-In the REPL, type
-
-```
-(ns punch.core)
-(swap! app-state assoc :text "Interactivity FTW")
-```
-
-Notice again how the browser updates.
-
 ### Lighttable
 
-Lighttable provides a tighter integration for live coding with an inline
+[Lighttable](http://lighttable.com/) provides a tighter integration for live coding with an inline
 browser-tab. Rather than evaluating cljs on the command line with the Figwheel
 REPL, you can evaluate code and preview pages inside Lighttable.
 
@@ -62,75 +47,6 @@ View LT's console to see a Chrome js console.
 
 Hereafter, you can save a file and see changes or evaluate cljs code (without
 saving a file).
-
-### Emacs/CIDER
-
-CIDER is able to start both a Clojure and a ClojureScript REPL simultaneously,
-so you can interact both with the browser, and with the server. The command to
-do this is `M-x cider-jack-in-clojurescript`.
-
-We need to tell CIDER how to start a browser-connected Figwheel REPL though,
-otherwise it will use a JavaScript engine provided by the JVM, and you won't be
-able to interact with your running app.
-
-Put this in your Emacs configuration (`~/.emacs.d/init.el` or `~/.emacs`)
-
-``` emacs-lisp
-(setq cider-cljs-lein-repl
-      "(do (user/go)
-           (user/cljs-repl))")
-```
-
-Now `M-x cider-jack-in-clojurescript` (shortcut: `C-c M-J`, that's a capital
-"J", so `Meta-Shift-j`), point your browser at `http://localhost:10555`, and
-you're good to go.
-
-## Testing
-
-To run the Clojure tests, use
-
-``` shell
-lein test
-```
-
-To run the Clojurescript you use [doo](https://github.com/bensu/doo). This can
-run your tests against a variety of JavaScript implementations, but in the
-browser and "headless". For example, to test with PhantomJS, use
-
-``` shell
-lein doo phantom
-```
-
-## Deploying to Heroku
-
-This assumes you have a
-[Heroku account](https://signup.heroku.com/dc), have installed the
-[Heroku toolbelt](https://toolbelt.heroku.com/), and have done a
-`heroku login` before.
-
-``` sh
-git init
-git add -A
-git commit
-heroku create
-git push heroku master:master
-heroku open
-```
-
-## Running with Foreman
-
-Heroku uses [Foreman](http://ddollar.github.io/foreman/) to run your
-app, which uses the `Procfile` in your repository to figure out which
-server command to run. Heroku also compiles and runs your code with a
-Leiningen "production" profile, instead of "dev". To locally simulate
-what Heroku does you can do:
-
-``` sh
-lein with-profile -dev,+production uberjar && foreman start
-```
-
-Now your app is running at
-[http://localhost:5000](http://localhost:5000) in production mode.
 
 ## License
 
