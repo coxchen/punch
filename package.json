@@ -1,0 +1,7 @@
+{
+  "name": "punch",
+  "version": "0.1.0",
+  "dependencies": {
+    "bower": "latest"
+  }
+}
