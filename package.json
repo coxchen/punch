@@ -3,5 +3,8 @@
   "version": "0.1.0",
   "dependencies": {
     "bower": "latest"
+  },
+  "scripts": {
+    "postinstall": "bower cache clean && bower install"
   }
 }
