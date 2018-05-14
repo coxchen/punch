@@ -43,14 +43,18 @@
  :clear-db
  (fn [] (clear storage-db)))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  :initialize-db
  (fn  [_ _]
-   (let [stored-db (fetch storage-db db/default-db)]
-     (-> db/default-db
-         (assoc :entries  (:entries  stored-db))
-         (assoc :projects (:projects stored-db))
-         (assoc :versions (:versions stored-db))))))
+   (let [stored-db (fetch storage-db db/default-db)
+         initialized-db
+         (-> db/default-db
+             (assoc :entries  (:entries  stored-db))
+             (assoc :projects (:projects stored-db))
+             (assoc :versions (:versions stored-db)))]
+     {:log [:initialize-db]
+      :db initialized-db
+      :save-db initialized-db})))
 
 (re-frame/reg-event-fx
   :add-entry
