@@ -3,9 +3,9 @@
   (:require [re-frame.core :as re-frame]))
 
 (re-frame/reg-sub
- :name
+ :username
  (fn [db]
-   (:name db)))
+   (:username db)))
 
 (re-frame/reg-sub
  :versions

@@ -1,5 +1,8 @@
 (ns punch.events
   (:require [re-frame.core :as re-frame]
+            [day8.re-frame.http-fx]
+            [ajax.core :as ajax]
+            [reagent.crypt :as crypt]
             [punch.db :as db]))
 
 ;; localStorage
@@ -51,10 +54,48 @@
          (-> db/default-db
              (assoc :entries  (:entries  stored-db))
              (assoc :projects (:projects stored-db))
-             (assoc :versions (:versions stored-db)))]
+             (assoc :versions (:versions stored-db))
+             (assoc :username (:username stored-db))
+             (assoc :secret   (:secret stored-db)))]
      {:log [:initialize-db]
       :db initialized-db
       :save-db initialized-db})))
+
+(re-frame/reg-event-fx
+  :login
+  (fn [cofx [_ cred]]
+    (let [db   (:db cofx)
+          cred (assoc cred :secret (crypt/hash (:secret cred) :sha256 true))]
+      {:log [:login cred]
+       :db  (merge db cred)
+       :http-xhrio {:method          :post
+                    :uri             "/login"
+                    :params          cred
+                    :format          (ajax/json-request-format)
+                    :response-format (ajax/json-response-format {:keywords? true})
+                    :on-success      [:on-login-resp]
+                    :on-failure      [:on-login-failed]}
+         })))
+
+(re-frame/reg-event-fx
+  :on-login-resp
+  (fn [cofx [_ result]]
+    (let [{:keys [login created]} result
+          success? (or login created)
+          db (if-not success?
+               (dissoc (:db cofx) :username :secret)
+               (:db cofx))]
+      {:log [:on-login-resp "success?" success?]
+       :db  db
+       :save-db db
+       })))
+
+(re-frame/reg-event-fx
+  :on-login-failed
+  (fn [cofx [_ result]]
+    (let [db (:db cofx)]
+      {:log [:on-login-failed result]
+       })))
 
 (re-frame/reg-event-fx
   :add-entry

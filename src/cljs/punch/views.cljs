@@ -33,25 +33,24 @@
 (def modal-d (component "Modal" "Description"))
 (def modal-a (component "Modal" "Actions"))
 
-(defn text-input [value placeholder required?]
-  [:div {:class (if required?
-                  (cond
-                    (empty? @value)  "ui input error"
-                    :else            "ui input")
-                  "ui input")}
-   [:input {:type "text" :value @value :placeholder placeholder
-            :on-change #(reset! value (-> % .-target .-value))}]])
+(defn input-valid-class [value required?]
+  (if (and required? (empty? @value))
+    "field error"
+    "field"))
+
+(defn text-input
+  ([value placeholder required?] (text-input value placeholder required? "text"))
+  ([value placeholder required? input-type]
+   [:div {:class (input-valid-class value required?)}
+    [:input {:type input-type :value @value :placeholder placeholder
+             :on-change #(reset! value (-> % .-target .-value))}]]))
 
 (defn text-input-inline
   ([value placeholder] (text-input-inline value placeholder false nil))
   ([value placeholder required?] (text-input-inline value placeholder required? nil))
   ([value placeholder required? cb]
    [:div.inline.fields
-    [:div {:class (if required?
-                   (cond
-                     (empty? @value)  "field error"
-                     :else            "field")
-                   "field")}
+    [:div {:class (input-valid-class value required?)}
      [:label placeholder]
      [:input {:type "text" :value @value :placeholder (if required? "required")
               :on-change #(do
@@ -282,11 +281,45 @@
                                      (re-frame/dispatch-sync [add-event @item])
                                      (reset! item "")))}]])])))
 
-(defn project-list []
-  (editable-list :projects "Projects" :new-project :remove-project))
+(defn project-list [] (editable-list :projects "Projects" :new-project :remove-project))
 
-(defn version-list []
-  (editable-list :versions "Versions" :new-version :remove-version))
+(defn version-list [] (editable-list :versions "Versions" :new-version :remove-version))
+
+(defn login-form [username secret]
+  [:div.ui.form
+   [:div.inline.fields
+    [text-input username "User Name" true]
+    [text-input secret   "Secret String" true "password"]
+    [:> button {:icon "user" :class "circular mini olive"
+                :content "login"
+                :on-click #(re-frame/dispatch-sync [:login {:username @username
+                                                            :secret @secret}])}]]
+   ])
+
+(defn title-control []
+  (let [login-username (re-frame/subscribe [:username])]
+    (r/with-let [username (r/atom "")
+                 secret   (r/atom "")]
+      [:div.ui.segment.container
+
+       [:h1 "PUNCH"
+
+        (if (not-empty @login-username)
+          [:> button {:icon "user" :class "circular twitter mini right floated"
+                      :content @login-username}])
+        ]
+
+       (if (empty? @login-username)
+         [login-form username secret]
+         [:div.ui.label [:i.user.icon] @login-username]
+         )
+
+       [:> button {:icon "low vision" :class "circular mini orange right floated"
+                   :content "clear local storage"
+                   :on-click #(re-frame/dispatch-sync [:clear-local-storage])}]
+       [:span (gstring/unescapeEntities "&nbsp;")]
+       [:hr]
+       ])))
 
 (defn main-panel []
   (let [entries  (re-frame/subscribe [:entries])
@@ -294,11 +327,7 @@
     (fn []
       [:div
 
-       [:div.ui.segment.container
-
-        [:h1 "PUNCH"
-         [:> button {:icon "low vision" :class "circular mini orange right floated" :content "clear local storage"
-                     :on-click #(re-frame/dispatch-sync [:clear-local-storage])}]]]
+       [title-control]
 
        [:div.ui.segment.container
         [:h2 [:i.exclamation.circle.icon] "Distractions"]]
