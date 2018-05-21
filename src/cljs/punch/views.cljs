@@ -293,8 +293,8 @@
     [:> button {:icon "user" :class "circular mini olive"
                 :content "login"
                 :on-click #(re-frame/dispatch-sync [:login {:username @username
-                                                            :secret @secret}])}]]
-   ])
+                                                            :secret @secret}])}]]])
+
 
 (defn title-control []
   (let [login-username (re-frame/subscribe [:username])]
@@ -306,20 +306,20 @@
 
         (if (not-empty @login-username)
           [:> button {:icon "user" :class "circular twitter mini right floated"
-                      :content @login-username}])
-        ]
+                      :content @login-username}])]
+
 
        (if (empty? @login-username)
          [login-form username secret]
-         [:div.ui.label [:i.user.icon] @login-username]
-         )
+         [:div.ui.label [:i.user.icon] @login-username])
+
 
        [:> button {:icon "low vision" :class "circular mini orange right floated"
                    :content "clear local storage"
                    :on-click #(re-frame/dispatch-sync [:clear-local-storage])}]
        [:span (gstring/unescapeEntities "&nbsp;")]
-       [:hr]
-       ])))
+       [:hr]])))
+
 
 (defn main-panel []
   (let [entries  (re-frame/subscribe [:entries])

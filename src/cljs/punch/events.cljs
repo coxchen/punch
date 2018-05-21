@@ -74,8 +74,7 @@
                     :format          (ajax/json-request-format)
                     :response-format (ajax/json-response-format {:keywords? true})
                     :on-success      [:on-login-resp]
-                    :on-failure      [:on-login-failed]}
-         })))
+                    :on-failure      [:on-login-failed]}})))
 
 (re-frame/reg-event-fx
   :on-login-resp
@@ -87,15 +86,15 @@
                (:db cofx))]
       {:log [:on-login-resp "success?" success?]
        :db  db
-       :save-db db
-       })))
+       :save-db db})))
 
 (re-frame/reg-event-fx
   :on-login-failed
   (fn [cofx [_ result]]
-    (let [db (:db cofx)]
+    (let [db (dissoc (:db cofx) :username :secret)]
       {:log [:on-login-failed result]
-       })))
+       :db  db
+       :save-db db})))
 
 (re-frame/reg-event-fx
   :add-entry

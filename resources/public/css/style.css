@@ -1,3 +1,29 @@
+body {
+  background-color: #DADADA;
+
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+
+}
+
+body > .grid {
+  height: 100%;
+}
+
 h1 {
   text-decoration: underline;
+}
+
+table {
+  border-collapse: inherit;
+  border-spacing: 0;
+}
+
+.ui.card {
+  width: 130px;
+  margin-right: -1.2em;
 }
