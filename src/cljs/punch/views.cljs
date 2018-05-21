@@ -298,27 +298,35 @@
 
 (defn title-control []
   (let [login-username (re-frame/subscribe [:username])]
-    (r/with-let [username (r/atom "")
+    (r/with-let [expand-control? (r/atom false)
+                 username (r/atom "")
                  secret   (r/atom "")]
       [:div.ui.segment.container
+       {:class (if @expand-control? "smallheadline expand" "smallheadline")}
 
        [:h1 "PUNCH"
+        [:> button {:icon (if @expand-control? "chevron circle up" "chevron circle down")
+                    :class "circular mini twitter right floated"
+                    :content @login-username
+                    :on-click #(reset! expand-control? (not @expand-control?))}]]
 
-        (if (not-empty @login-username)
-          [:> button {:icon "user" :class "circular twitter mini right floated"
-                      :content @login-username}])]
-
+;;         (if (not-empty @login-username)
+;;           [:> button {:icon "user" :class "circular twitter mini right floated"
+;;                       :content @login-username}])]
 
        (if (empty? @login-username)
          [login-form username secret]
-         [:div.ui.label [:i.user.icon] @login-username])
+         [:div.ui.label
+          [:i.user.icon] @login-username
+          [:i.delete.icon
+           {:on-click #(re-frame/dispatch-sync [:logout])}]])
 
-
+       [:hr]
+       [:span (gstring/unescapeEntities "&nbsp;")]
        [:> button {:icon "low vision" :class "circular mini orange right floated"
                    :content "clear local storage"
-                   :on-click #(re-frame/dispatch-sync [:clear-local-storage])}]
-       [:span (gstring/unescapeEntities "&nbsp;")]
-       [:hr]])))
+                   :on-click #(re-frame/dispatch-sync [:clear-local-storage])}]])))
+
 
 
 (defn main-panel []

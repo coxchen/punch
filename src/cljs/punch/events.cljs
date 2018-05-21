@@ -97,6 +97,15 @@
        :save-db db})))
 
 (re-frame/reg-event-fx
+  :logout
+  (fn [cofx [_ result]]
+    (let [user (get-in cofx [:db :username])
+          db (dissoc (:db cofx) :username :secret)]
+      {:log [:logout user]
+       :db  db
+       :save-db db})))
+
+(re-frame/reg-event-fx
   :add-entry
   (fn [cofx [_ entry]]
     (let [db (update-in (:db cofx) [:entries] #(conj % entry))]
