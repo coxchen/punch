@@ -111,10 +111,10 @@
 (def to-backup-keys [:versions :projects :entries :done])
 
 (defn stamp-backup [db]
-  (assoc db :backup-time (-> (u/this-moment) (moment->datetime))))
+  (assoc db :backup-time (-> (u/this-moment) (u/moment->datetime))))
 
 (defn stamp-change [db]
-  (assoc db :change-time (-> (u/this-moment) (moment->datetime))))
+  (assoc db :change-time (-> (u/this-moment) (u/moment->datetime))))
 
 (re-frame/reg-event-fx
   :backup
