@@ -61,6 +61,8 @@
       :db initialized-db
       :save-db initialized-db})))
 
+(defn remove-cred [db] (dissoc db :username :secret))
+
 (re-frame/reg-event-fx
   :login
   (fn [cofx [_ cred]]
@@ -82,7 +84,7 @@
     (let [{:keys [login created]} result
           success? (or login created)
           db (if-not success?
-               (dissoc (:db cofx) :username :secret)
+               (remove-cred (:db cofx))
                (:db cofx))]
       {:log [:on-login-resp "success?" success?]
        :db  db
@@ -91,7 +93,7 @@
 (re-frame/reg-event-fx
   :on-login-failed
   (fn [cofx [_ result]]
-    (let [db (dissoc (:db cofx) :username :secret)]
+    (let [db (remove-cred (:db cofx))]
       {:log [:on-login-failed result]
        :db  db
        :save-db db})))
@@ -100,7 +102,7 @@
   :logout
   (fn [cofx [_ result]]
     (let [user (get-in cofx [:db :username])
-          db (dissoc (:db cofx) :username :secret)]
+          db   (remove-cred (:db cofx))]
       {:log [:logout user]
        :db  db
        :save-db db})))
