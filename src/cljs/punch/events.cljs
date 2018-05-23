@@ -120,7 +120,7 @@
   :backup
   (fn [cofx [_ result]]
     (let [to-backup (select-keys (:db cofx) to-backup-keys)
-          stamp-db (stamp-backup db)]
+          stamp-db (stamp-backup (:db cofx))]
       {:log [:backup to-backup]
        :db  stamp-db
        :save-db stamp-db
