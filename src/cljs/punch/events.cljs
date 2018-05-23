@@ -108,6 +108,24 @@
        :db  db
        :save-db db})))
 
+(def to-backup-keys [:versions :projects :entries :done])
+
+(defn stamp-backup [db]
+  (assoc db :backup-time (-> (u/this-moment) (moment->datetime))))
+
+(defn stamp-change [db]
+  (assoc db :change-time (-> (u/this-moment) (moment->datetime))))
+
+(re-frame/reg-event-fx
+  :backup
+  (fn [cofx [_ result]]
+    (let [to-backup (select-keys (:db cofx) to-backup-keys)
+          stamp-db (stamp-backup db)]
+      {:log [:backup to-backup]
+       :db  stamp-db
+       :save-db stamp-db
+       })))
+
 (re-frame/reg-event-fx
   :add-entry
   (fn [cofx [_ entry]]

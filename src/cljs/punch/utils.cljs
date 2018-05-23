@@ -2,11 +2,14 @@
   (:require [cljsjs.moment]))
 
 (def date-format "YYYY-MMDD")
+(def week-format "YYYYWW")
+(def datetime-format "YYYY-MMDD HH:mm:ss")
 
 (defn day->moment  [d] (-> d (js/moment date-format)))
 (defn moment->day  [m] (-> m (.format date-format)))
+(defn moment->datetime  [m] (-> m (.format datetime-format)))
 (defn moment->week-date [m] (-> m (.startOf "isoWeek") (.format date-format)))
-(defn moment->year-week-num [m] (-> m (.format "YYYYWW") int))
+(defn moment->year-week-num [m] (-> m (.format week-format) int))
 (defn today [] (moment->day (js/moment)))
 (defn this-moment [] (js/moment))
 

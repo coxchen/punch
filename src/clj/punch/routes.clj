@@ -41,4 +41,6 @@
            (-> login-result
                response)))
 
+   (POST "/backup" req)
+
    (resources "/")))
