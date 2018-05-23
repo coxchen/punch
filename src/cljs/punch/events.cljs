@@ -3,7 +3,8 @@
             [day8.re-frame.http-fx]
             [ajax.core :as ajax]
             [reagent.crypt :as crypt]
-            [punch.db :as db]))
+            [punch.db :as db]
+            [punch.utils :as u]))
 
 ;; localStorage
 (defn store [k obj] (.setItem    js/localStorage k (js/JSON.stringify (clj->js obj))))
@@ -110,8 +111,9 @@
 (re-frame/reg-event-fx
   :add-entry
   (fn [cofx [_ entry]]
-    (let [db (update-in (:db cofx) [:entries] #(conj % entry))]
-      {:log [:add-entry (pr-str entry)]
+    (let [timed-entry (assoc entry :added (u/today))
+          db (update-in (:db cofx) [:entries] #(conj % timed-entry))]
+      {:log [:add-entry (pr-str [(u/today) timed-entry])]
        :db  db
        :save-db db
        :dispatch [:close-entry-popup]})))
