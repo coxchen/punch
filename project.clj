@@ -24,6 +24,7 @@
                  [day8.re-frame/http-fx "0.1.6"]
                  [cljs-ajax "0.7.3"]
                  [cljsjs/semantic-ui-react "0.78.2-0"]
+                 [cljsjs/moment "2.22.0-0"]
                  [org.clojure/java.jdbc "0.7.6"]
                  [org.postgresql/postgresql "42.2.2"]
                  [yesql "0.5.3"]]

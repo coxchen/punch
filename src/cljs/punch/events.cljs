@@ -3,7 +3,15 @@
             [day8.re-frame.http-fx]
             [ajax.core :as ajax]
             [reagent.crypt :as crypt]
+            [cljsjs.moment]
             [punch.db :as db]))
+
+(def date-format "YYYY-MMDD")
+
+(defn moment->day [m] (-> m (.format date-format)))
+(defn moment->week [m] (-> m (.startOf "week") (.format date-format)))
+(defn day->moment [d] (-> d (js/moment date-format)))
+(defn today [] (moment->day (js/moment)))
 
 ;; localStorage
 (defn store [k obj] (.setItem    js/localStorage k (js/JSON.stringify (clj->js obj))))
@@ -108,8 +116,9 @@
 (re-frame/reg-event-fx
   :add-entry
   (fn [cofx [_ entry]]
-    (let [db (update-in (:db cofx) [:entries] #(conj % entry))]
-      {:log [:add-entry (pr-str entry)]
+    (let [timed-entry (assoc entry :added (today))
+          db (update-in (:db cofx) [:entries] #(conj % timed-entry))]
+      {:log [:add-entry (pr-str [(today) timed-entry])]
        :db  db
        :save-db db
        :dispatch [:close-entry-popup]})))
