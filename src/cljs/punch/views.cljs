@@ -1,9 +1,10 @@
 (ns punch.views
   (:require [re-frame.core :as re-frame]
             [reagent.core :as r]
-            cljsjs.semantic-ui-react
-            goog.object
-            [goog.string :as gstring]))
+            [cljsjs.semantic-ui-react]
+            [goog.object]
+            [goog.string :as gstring]
+            [punch.utils :as u]))
 
 (def semantic-ui js/semanticUIReact)
 
@@ -112,9 +113,7 @@
                                             :version (if @version (nth @versions @version))
                                             :project (if @project (nth @projects @project))
                                             :logs empty-log}]
-                                 (re-frame/dispatch-sync [:add-entry entry])
-                                 (.log js/console (pr-str entry))))}]])))
-
+                                 (re-frame/dispatch-sync [:add-entry entry])))}]])))
 
 (defn new-entry-popup []
   (let [is-popup-open (re-frame/subscribe [:is-entry-popup-open])]
@@ -197,13 +196,23 @@
                                 :on-click #(re-frame/dispatch-sync [:remove-action entry-idx day action-idx])}]]
       [:pre act-comment]])])
 
+(defn entry-front [entry-idx entry]
+  [:td {:style {:width "15%"}}
+   [entry-ribbon entry]
+   [popup-entry-title entry-idx entry]])
+
+(defn entry-class [entry]
+  (cond
+    (empty? (:added entry)) "warning"
+    (u/before-this-week? (:added entry)) "active"
+    :else ""))
+
 (defn entry-row [[entry-idx entry]]
   (let [days (re-frame/subscribe [:week-days])
         actions (re-frame/subscribe [:actions])
         logs (:logs entry)]
-    (into [:tr [:td {:style {:width "15%"}}
-                [entry-ribbon entry]
-                [popup-entry-title entry-idx entry]]]
+    (into [:tr {:class (entry-class entry)}
+           [entry-front entry-idx entry]]
           ;; extract me!!!
           (for [d @days]
             [:td
@@ -323,9 +332,13 @@
 
        [:hr]
        [:span (gstring/unescapeEntities "&nbsp;")]
+
        [:> button {:icon "low vision" :class "circular mini orange right floated"
                    :content "clear local storage"
-                   :on-click #(re-frame/dispatch-sync [:clear-local-storage])}]])))
+                   :on-click #(re-frame/dispatch-sync [:clear-local-storage])}]
+
+       [:> button {:icon "cloud upload" :class "circular mini olive right floated"
+                   :content "upload"}]])))
 
 
 
