@@ -24,23 +24,40 @@
 
 (defn home-routes [endpoint]
   (routes
-   (GET "/" _
-     (-> "public/index.html"
-         io/resource
-         io/input-stream
-         response
-         (assoc :headers {"Content-Type" "text/html; charset=utf-8"})))
+    (GET "/" _
+         (-> "public/index.html"
+             io/resource
+             io/input-stream
+             response
+             (assoc :headers {"Content-Type" "text/html; charset=utf-8"})))
 
-   (GET "/users" _
-        (-> (db/users {} (db-spec))
-            response))
+    (GET "/users" _
+         (-> (db/users {} (db-spec))
+             response))
 
-   (POST "/login" req
-         (let [cred (select-keys (:body req) [:username :secret])
-               login-result (match-or-create cred)]
-           (-> login-result
-               response)))
+    (POST "/login" req
+          (let [cred (select-keys (:body req) [:username :secret])
+                login-result (match-or-create cred)]
+            (-> login-result
+                response)))
 
-   (POST "/backup" req)
+    (POST "/backup" req
+          (let [cred (select-keys (:body req) [:username :secret])
+                matched (db/matched-user cred (db-spec))]
+            (if (empty? matched)
+              (-> {:success false :reason "invalid user"} (response))
+              (let [report (select-keys (:body req) [:username :weekdate :content])
+;;                     _ (println "?? report" report)
+                    report-exist? (not-empty
+                                    (db/check-weekly-report
+                                      (select-keys report [:username :weekdate])
+                                      (db-spec)))
+                    _ (println "?? report-exist?" report-exist?)
+                    backup-resp (if report-exist?
+                                  {:updated (not-empty (db/update-weekly-report report (db-spec)))}
+                                  {:created (not-empty (db/create-weekly-report report (db-spec)))})]
+                (-> backup-resp
+                    response)))))
 
-   (resources "/")))
+
+    (resources "/")))

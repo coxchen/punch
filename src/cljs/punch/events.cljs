@@ -7,6 +7,7 @@
             [punch.utils :as u]))
 
 ;; localStorage
+(defn ->json-str [obj] (js/JSON.stringify (clj->js obj)))
 (defn store [k obj] (.setItem    js/localStorage k (js/JSON.stringify (clj->js obj))))
 (defn clear [k]     (.removeItem js/localStorage k))
 
@@ -110,6 +111,9 @@
 
 (def to-backup-keys [:versions :projects :entries :done])
 
+(defn stamp-weekdate [db]
+  (assoc db :weekdate (-> (u/this-moment) (u/moment->week-date))))
+
 (defn stamp-backup [db]
   (assoc db :backup-time (-> (u/this-moment) (u/moment->datetime))))
 
@@ -118,13 +122,35 @@
 
 (re-frame/reg-event-fx
   :backup
-  (fn [cofx [_ result]]
-    (let [to-backup (select-keys (:db cofx) to-backup-keys)
-          stamp-db (stamp-backup (:db cofx))]
+  (fn [cofx _]
+    (let [to-backup {:content  (->json-str (select-keys (:db cofx) to-backup-keys))
+                     :weekdate (-> (u/this-moment) (u/moment->week-date))
+                     :username (:username (:db cofx))
+                     :secret   (:secret (:db cofx))}]
       {:log [:backup to-backup]
-       :db  stamp-db
-       :save-db stamp-db
-       })))
+       :http-xhrio {:method          :post
+                    :uri             "/backup"
+                    :params          to-backup
+                    :format          (ajax/json-request-format)
+                    :response-format (ajax/json-response-format {:keywords? true})
+                    :on-success      [:on-backup-resp]
+                    :on-failure      [:on-backup-failed]}})))
+
+(re-frame/reg-event-fx
+  :on-backup-resp
+  (fn [cofx [_ result]]
+    (let [stamp-db (stamp-backup (:db cofx))]
+      {:log [:on-backup-resp "result" result]})))
+;;        :db  db
+;;        :save-db db})))
+
+(re-frame/reg-event-fx
+  :on-backup-failed
+  (fn [cofx [_ result]]
+    (let [a 1]
+      {:log [:on-backup-failed result]})))
+;;        :db  db
+;;        :save-db db})))
 
 (re-frame/reg-event-fx
   :add-entry

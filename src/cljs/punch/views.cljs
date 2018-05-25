@@ -338,9 +338,8 @@
                    :on-click #(re-frame/dispatch-sync [:clear-local-storage])}]
 
        [:> button {:icon "cloud upload" :class "circular mini olive right floated"
-                   :content "upload"}]])))
-
-
+                   :content "backup"
+                   :on-click #(re-frame/dispatch-sync [:backup])}]])))
 
 (defn main-panel []
   (let [entries  (re-frame/subscribe [:entries])
