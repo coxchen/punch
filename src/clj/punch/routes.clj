@@ -6,6 +6,8 @@
             [punch.db :as db]
             [environ.core :refer [env]]))
 
+(defn has-result? [result] (not (empty? result)))
+
 (defn db-spec [] {:connection (env :database-url)})
 
 (defn try-create-user [cred]
@@ -19,8 +21,14 @@
         created (if (empty? matched)
                   (try-create-user cred)
                   '())]
-    {:login   (not (empty? matched))
-     :created (not (empty? created))}))
+    {:login   (has-result? matched)
+     :created (has-result? created)}))
+
+(defn ->sql-ts [date]
+  (-> (java.text.SimpleDateFormat. "yyyy-MMdd")
+      (.parse date)
+      (.getTime)
+      (java.sql.Timestamp.)))
 
 (defn home-routes [endpoint]
   (routes
@@ -41,23 +49,22 @@
             (-> login-result
                 response)))
 
-    (POST "/backup" req
-          (let [cred (select-keys (:body req) [:username :secret])
-                matched (db/matched-user cred (db-spec))]
-            (if (empty? matched)
-              (-> {:success false :reason "invalid user"} (response))
-              (let [report (select-keys (:body req) [:username :weekdate :content])
-;;                     _ (println "?? report" report)
-                    report-exist? (not-empty
-                                    (db/check-weekly-report
-                                      (select-keys report [:username :weekdate])
-                                      (db-spec)))
-                    _ (println "?? report-exist?" report-exist?)
-                    backup-resp (if report-exist?
-                                  {:updated (not-empty (db/update-weekly-report report (db-spec)))}
-                                  {:created (not-empty (db/create-weekly-report report (db-spec)))})]
-                (-> backup-resp
-                    response)))))
+   (POST "/backup" req
+         (let [cred (select-keys (:body req) [:username :secret])
+               matched (db/matched-user cred (db-spec))]
+           (if (empty? matched)
+             (-> {:success false :reason "invalid user"} (response))
+             (let [report (select-keys (:body req) [:username :weekdate :content])
+                   report (assoc report :weekdate (->sql-ts (:weekdate report)))
+                   no-report? (empty?
+                               (db/check-weekly-report
+                                (select-keys report [:username :weekdate])
+                                (db-spec)))
+                   backup-resp (if no-report?
+                                 {:created (has-result? (db/create-weekly-report report (db-spec)))}
+                                 {:updated (has-result? (db/update-weekly-report report (db-spec)))})]
+               (-> backup-resp
+                   response)))))
 
 
     (resources "/")))
