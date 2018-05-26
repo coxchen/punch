@@ -1,38 +1,13 @@
 (ns punch.views
   (:require [re-frame.core :as re-frame]
             [reagent.core :as r]
-            [cljsjs.semantic-ui-react]
             [goog.object]
             [goog.string :as gstring]
-            [punch.utils :as u]))
-
-(def semantic-ui js/semanticUIReact)
-
-(defn component
-  "Get a component from sematic-ui-react:
-
-    (component \"Button\")
-    (component \"Menu\" \"Item\")"
-  [k & ks]
-  (if (seq ks)
-    (apply goog.object/getValueByKeys semantic-ui k ks)
-    (goog.object/get semantic-ui k)))
-
-(def button   (component "Button"))
-(def grid     (component "Grid"))
-(def column   (component "Grid" "Column"))
-(def popup    (component "Popup"))
-(def rating   (component "Rating"))
-(def checkbox (component "Checkbox"))
-(def dropdown (component "Dropdown"))
-(def radio    (component "Radio"))
-(def textarea (component "TextArea"))
-
-(def modal   (component "Modal"))
-(def modal-h (component "Modal" "Header"))
-(def modal-c (component "Modal" "Content"))
-(def modal-d (component "Modal" "Description"))
-(def modal-a (component "Modal" "Actions"))
+            [punch.utils :as u]
+            [punch.views_sui
+             :refer [button popup checkbox dropdown radio textarea
+                     modal modal-h modal-c modal-c modal-d modal-a]]
+            [punch.views_calendar :as cal]))
 
 (defn input-valid-class [value required?]
   (if (and required? (empty? @value))
@@ -356,6 +331,7 @@
         {:style {:min-height "600px"}}
 
         [:h2 "Doing"
+
          [:> button {:icon "question circle" :class "circular mini teal right floated" :content "sample"
                      :on-click #(re-frame/dispatch-sync [:sample-entries])}]]
 
@@ -380,6 +356,9 @@
                         :on-click #(re-frame/dispatch-sync [:clear-entries])}]]]]]
 
         [:div.ui.right.rail
+
+         [cal/week-selection]
+
          [:div.ui.segment
           [:h2 "Done"]]]
 

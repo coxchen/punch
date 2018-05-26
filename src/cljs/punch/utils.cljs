@@ -13,6 +13,8 @@
 (defn today [] (moment->day (js/moment)))
 (defn this-moment [] (js/moment))
 
+(defn this-week-date [] (-> (this-moment) (moment->week-date)))
+
 (defn compare-week [op]
   (fn [date]
     (if-not (empty? date)

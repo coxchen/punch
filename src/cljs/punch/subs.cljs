@@ -36,3 +36,8 @@
  :entries
  (fn [db]
    (:entries db)))
+
+(re-frame/reg-sub
+ :weekdate
+ (fn [db]
+   (:weekdate db)))

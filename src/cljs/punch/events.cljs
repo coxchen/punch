@@ -58,7 +58,8 @@
              (assoc :projects (:projects stored-db))
              (assoc :versions (:versions stored-db))
              (assoc :username (:username stored-db))
-             (assoc :secret   (:secret stored-db)))]
+             (assoc :secret   (:secret   stored-db))
+             (assoc :weekdate (:weekdate stored-db)))]
      {:log [:initialize-db]
       :db initialized-db
       :save-db initialized-db})))
@@ -109,6 +110,14 @@
        :db  db
        :save-db db})))
 
+(re-frame/reg-event-fx
+  :update-weekdate
+  (fn [cofx [_ weekdate]]
+    (let [db (assoc (:db cofx) :weekdate weekdate)]
+      {:log [:update-weekdate weekdate]
+       :db  db
+       :save-db db})))
+
 (def to-backup-keys [:versions :projects :entries :done])
 
 (defn stamp-weekdate [db]
@@ -124,7 +133,8 @@
   :backup
   (fn [cofx _]
     (let [to-backup {:content  (->json-str (select-keys (:db cofx) to-backup-keys))
-                     :weekdate (-> (u/this-moment) (u/moment->week-date))
+                     :weekdate (or (:weekdate (:db cofx))
+                                   (u/this-week-date))
                      :username (:username (:db cofx))
                      :secret   (:secret (:db cofx))}]
       {:log [:backup to-backup]
