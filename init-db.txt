@@ -1,0 +1,4 @@
+create table users (username text primary key, secret text not null);
+
+create table weekview (username text, weekdate timestamp, content text, primary key(username, weekdate));
+
