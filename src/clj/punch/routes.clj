@@ -64,7 +64,6 @@
                                  {:created (has-result? (db/create-weekly-report report (db-spec)))}
                                  {:updated (has-result? (db/update-weekly-report report (db-spec)))})]
                (-> backup-resp
-                   response)))))
+                   response))))
 
-
-    (resources "/")))
+    (resources "/"))))
