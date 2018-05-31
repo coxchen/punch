@@ -16,11 +16,11 @@
            [:li
             (if (not-empty (:jira entry)) (str (:jira entry) ": "))
             (:topic entry)
-            ; (let [logs (vals (:logs entry))
-            ;       _ (.log js/console "??" (pr-str logs))]
-            ;   (into [:ul]
-            ;         (for [l (->logs logs)]
-            ;           [:li l])))
+            (let [logs (vals (:logs entry))
+                  _ (.log js/console "??" (pr-str logs))]
+              (into [:ul]
+                    (for [l (->logs logs)]
+                      [:li l])))
           ])]))
 
 (defn reporting-projects [group-by-ver ver]
