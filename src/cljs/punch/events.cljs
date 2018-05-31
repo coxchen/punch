@@ -55,6 +55,7 @@
          initialized-db
          (-> db/default-db
              (assoc :entries  (:entries  stored-db))
+             (assoc :backlog  (:backlog  stored-db))
              (assoc :projects (:projects stored-db))
              (assoc :versions (:versions stored-db))
              (assoc :username (:username stored-db))
@@ -118,7 +119,7 @@
        :db  db
        :save-db db})))
 
-(def to-backup-keys [:versions :projects :entries :done])
+(def to-backup-keys [:versions :projects :entries :backlog])
 
 (defn stamp-weekdate [db]
   (assoc db :weekdate (-> (u/this-moment) (u/moment->week-date))))
@@ -161,6 +162,10 @@
       {:log [:on-backup-failed result]})))
 ;;        :db  db
 ;;        :save-db db})))
+
+
+;;;;;;;;;;;;;;;;;;;;
+;; doing entry
 
 (re-frame/reg-event-fx
   :add-entry
@@ -249,6 +254,67 @@
       {:log [:done-entry idx]
        :db  db})))
 ;;        :save-db db})))
+
+;;;;;;;;;;;;;;;;;;;;
+;; backlog
+
+(re-frame/reg-event-fx
+  :add-backlog
+  (fn [cofx [_ entry]]
+    (let [db (update-in (:db cofx) [:backlog] #(conj % entry))]
+      {:log [:add-backlog entry]
+       :db  db
+       :save-db db
+       :dispatch [:close-backlog-popup]})))
+
+(re-frame/reg-event-fx
+  :remove-backlog
+  (fn [cofx [_ idx entry]]
+    (let [db (update-in (:db cofx) [:backlog] #(vec-remove % idx))]
+      {:log [:remove-backlog idx]
+       :db  db
+       :save-db db})))
+
+(re-frame/reg-event-fx
+  :open-backlog-popup
+  (fn [cofx _]
+    (let [db (assoc-in (:db cofx) [:is-backlog-popup-open] true)]
+      {:log [:open-backlog-popup]
+       :db  db})))
+
+(re-frame/reg-event-fx
+  :close-backlog-popup
+  (fn [cofx _]
+    (let [db (assoc-in (:db cofx) [:is-backlog-popup-open] false)]
+      {:log [:close-backlog-popup]
+       :db  db
+       :save-db db})))
+
+(re-frame/reg-event-fx
+  :move-backlog-to-doing
+  (fn [cofx [_ idx entry]]
+    (let [timed-entry (assoc entry :added (u/today))
+          db (-> (:db cofx)
+                 (update-in [:backlog] #(vec-remove % idx))
+                 (update-in [:entries] #(conj % timed-entry)))]
+
+      {:log [:move-backlog-to-doing timed-entry]
+       :db  db
+       :save-db db})))
+
+(re-frame/reg-event-fx
+  :move-doing-to-backlog
+  (fn [cofx [_ idx entry]]
+    (let [db (-> (:db cofx)
+                 (update-in [:entries] #(vec-remove % idx))
+                 (update-in [:backlog] #(conj % entry)))]
+
+      {:log [:move-doing-to-backlog entry]
+       :db  db
+       :save-db db})))
+
+;;;;;;;;;;;;;;;;;;;;
+
 
 (re-frame/reg-event-fx
   :new-project

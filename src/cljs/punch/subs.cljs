@@ -33,9 +33,19 @@
    (:is-entry-popup-open db)))
 
 (re-frame/reg-sub
+ :is-backlog-popup-open
+ (fn [db]
+   (:is-backlog-popup-open db)))
+
+(re-frame/reg-sub
  :entries
  (fn [db]
    (:entries db)))
+
+(re-frame/reg-sub
+ :backlog
+ (fn [db]
+   (:backlog db)))
 
 (re-frame/reg-sub
  :weekdate

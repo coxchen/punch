@@ -5,7 +5,7 @@
             [punch.views_common    :as common]
             [punch.views_title     :as title]
             [punch.views_doing     :as doing]
-            [punch.views_reporting :as reporting]
+            [punch.views_backlog   :as backlog]
             [punch.views_sui
              :refer [button popup checkbox dropdown radio textarea
                      modal modal-h modal-c modal-c modal-d modal-a]]
@@ -17,7 +17,8 @@
 
 (defn main-panel []
   (let [entries  (re-frame/subscribe [:entries])
-        projects (re-frame/subscribe [:projects])]
+        projects (re-frame/subscribe [:projects])
+        backlog (re-frame/subscribe  [:backlog])]
     (fn []
       [:div
 
@@ -29,10 +30,10 @@
        [:div.ui.segment.container
         {:style {:min-height "600px"}}
 
-        [:h2 "Doing"
+        [:h2 "Doing"]
 
-         [:> button {:icon "question circle" :class "circular mini teal right floated" :content "sample"
-                     :on-click #(re-frame/dispatch-sync [:sample-entries])}]]
+;;          [:> button {:icon "question circle" :class "circular mini teal right floated" :content "sample"
+;;                      :on-click #(re-frame/dispatch-sync [:sample-entries])}]]
 
         [doing/entry-table entries]
 
@@ -43,5 +44,11 @@
          [project-list]
          [version-list]]]
 
-       [:div.ui.segment.container
-        [:h2 "Backlog"]]])))
+       (into
+         [:div.ui.segment.container
+          [:h2 "Backlog"
+           [backlog/new-backlog-popup]]]
+
+         (for [[idx b] (map-indexed (fn [idx item] [idx item]) @backlog)]
+           [backlog/backlog-entry idx b]))])))
+

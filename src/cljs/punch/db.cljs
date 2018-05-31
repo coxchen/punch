@@ -15,8 +15,11 @@
    :week-days ["mon" "tue" "wed" "thr" "fri"]
 
    :is-entry-popup-open false
+   :is-backlog-popup-open false
 
    :entries []
+
+   :backlog []
 
    :done []
 

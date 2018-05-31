@@ -38,3 +38,7 @@ table {
   max-height:250px;
   transition:all .5s ease;
 }
+
+.backlog-entry:hover {
+  cursor:pointer;
+}
