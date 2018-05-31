@@ -21,34 +21,43 @@
         backlog (re-frame/subscribe  [:backlog])]
     (fn []
       [:div
+        [:div.ui.grid.centered
+          [:div.row
+              [:div.column.eight.wide
+                [title/title-control]
+                [:div.ui.segment.container
+                  [:h2 [:i.exclamation.circle.icon] "Distractions"]]
+              ]
+          ]
+          [:div.row
+            [:div.column.three.wide
+              [project-list]
+              [version-list]
+            ]
+            [:div.column.eight.wide
+              [:div.ui.segment.container
+               {:style {:min-height "600px"}}
 
-       [title/title-control]
+               [:h2 "Doing"
 
-       [:div.ui.segment.container
-        [:h2 [:i.exclamation.circle.icon] "Distractions"]]
+                ; [:> button {:icon "question circle" :class "circular mini teal right floated" :content "sample"
+                ;             :on-click #(re-frame/dispatch-sync [:sample-entries])}]
+               ]
 
-       [:div.ui.segment.container
-        {:style {:min-height "600px"}}
+               [doing/entry-table entries]
 
-        [:h2 "Doing (" (count @entries) " )"]
+               (into
+                 [:div.ui.segment.container
+                  [:h2 "Backlog (" (count @backlog) " )"
+                    [backlog/new-backlog-popup]]]
 
-;;          [:> button {:icon "question circle" :class "circular mini teal right floated" :content "sample"
-;;                      :on-click #(re-frame/dispatch-sync [:sample-entries])}]]
-
-        [doing/entry-table entries]
-
-        [:div.ui.right.rail
-         [cal/week-selection]]
-
-        [:div.ui.left.rail
-         [project-list]
-         [version-list]]]
-
-       (into
-         [:div.ui.segment.container
-          [:h2 "Backlog (" (count @backlog) " )"
-           [backlog/new-backlog-popup]]]
-
-         (for [[idx b] (map-indexed (fn [idx item] [idx item]) @backlog)]
-           [backlog/backlog-entry idx b]))])))
-
+                 (for [[idx b] (map-indexed (fn [idx item] [idx item]) @backlog)]
+                  [backlog/backlog-entry idx b]))
+              ]
+            ]
+            [:div.column.three.wide
+              [cal/week-selection]
+            ]
+         ]
+       ]
+      ])))

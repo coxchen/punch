@@ -127,7 +127,7 @@
    [:div
     [:h4 (:topic entry)]
     [:> button {:icon "thumbs down" :class "circular mini twitter" :content "to backlog"
-                :on-click #(re-frame/dispatch-sync [:move-doing-to-backlog idx entry])}]
+                :on-click #(re-frame/dispatch-sync [:copy-doing-to-backlog idx entry])}]
     [:> button {:icon "trash" :class "circular mini red" :content "remove"
                 :on-click #(re-frame/dispatch-sync [:remove-entry idx entry])}]]])
 

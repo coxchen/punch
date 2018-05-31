@@ -16,11 +16,12 @@
            [:li
             (if (not-empty (:jira entry)) (str (:jira entry) ": "))
             (:topic entry)
-            (let [logs (vals (:logs entry))
-                  _ (.log js/console "??" (pr-str logs))]
-              (into [:ul]
-                    (for [l (->logs logs)]
-                      [:li l])))])]))
+            ; (let [logs (vals (:logs entry))
+            ;       _ (.log js/console "??" (pr-str logs))]
+            ;   (into [:ul]
+            ;         (for [l (->logs logs)]
+            ;           [:li l])))
+          ])]))
 
 (defn reporting-projects [group-by-ver ver]
   (let [group-by-proj (group-by :project (get group-by-ver ver))
@@ -31,14 +32,31 @@
                          (if (and (not= p "None") (not-empty p)) [:h4 "[project] " p])
                          [reporting-entries group-by-proj p]]))))
 
-(defn reporting []
-  (let [entries  (re-frame/subscribe [:entries])
-        versions (re-frame/subscribe [:versions])
-        _ (.log js/console (pr-str (group-by :version @entries)))
-        group-by-ver (group-by :version @entries)]
-    (into [:div]
+(defn reporting-items [items versions separatorText]
+  (let [_ (.log js/console (pr-str (group-by :version @items)))
+        group-by-ver (group-by :version @items)]
+    (into [:div
+            [:h3 "--------------------" separatorText "--------------------"]]
           (for [[idx ver] (map-indexed (fn [idx itm] [idx itm]) (keys group-by-ver))]
             ^{:key idx} [reporting-projects group-by-ver ver]))))
+
+(defn reporting-problem []
+  [:div
+    [:h3 "--------------------Problem--------------------"]
+    [:ul [:li [:topic "None"]]]])
+
+(defn reporting []
+  (let [entries  (re-frame/subscribe [:entries])
+        projects (re-frame/subscribe [:projects])
+        versions (re-frame/subscribe [:versions])
+        backlog (re-frame/subscribe  [:backlog])]
+    [:div
+      [reporting-items entries versions "Progress"]
+      [reporting-items backlog versions "Plan"]
+      [reporting-problem]
+    ]
+  )
+)
 
 
 (defn reporting-modal []

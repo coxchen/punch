@@ -303,10 +303,10 @@
        :save-db db})))
 
 (re-frame/reg-event-fx
-  :move-doing-to-backlog
+  :copy-doing-to-backlog
   (fn [cofx [_ idx entry]]
     (let [db (-> (:db cofx)
-                 (update-in [:entries] #(vec-remove % idx))
+                 ; (update-in [:entries] #(vec-remove % idx))
                  (update-in [:backlog] #(conj % entry)))]
 
       {:log [:move-doing-to-backlog entry]
