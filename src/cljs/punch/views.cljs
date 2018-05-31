@@ -30,7 +30,7 @@
        [:div.ui.segment.container
         {:style {:min-height "600px"}}
 
-        [:h2 "Doing"]
+        [:h2 "Doing (" (count @entries) " )"]
 
 ;;          [:> button {:icon "question circle" :class "circular mini teal right floated" :content "sample"
 ;;                      :on-click #(re-frame/dispatch-sync [:sample-entries])}]]
@@ -46,7 +46,7 @@
 
        (into
          [:div.ui.segment.container
-          [:h2 "Backlog"
+          [:h2 "Backlog (" (count @backlog) " )"
            [backlog/new-backlog-popup]]]
 
          (for [[idx b] (map-indexed (fn [idx item] [idx item]) @backlog)]
