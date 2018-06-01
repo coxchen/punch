@@ -35,7 +35,6 @@
             ^{:key idx} [:div
                          (if (and (not= p "None") (not-empty p)) [:h4 "[project] " p])
                          [reporting-entries group-by-proj p include-log?]]))))
-
 (defn default-item []
  [:ul [:li [:topic "None"]]])
 
