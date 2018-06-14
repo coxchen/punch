@@ -15,6 +15,31 @@
 
 (defn version-list [] (common/editable-list :versions "Versions" :new-version :remove-version))
 
+(defn backup? [backup-time change-time entries backlog]
+  (cond
+    (and (nil? @backup-time)
+         (or (> (count @entries) 0)
+             (> (count @backlog) 0))) false
+    (nil? @change-time) true
+    :else
+    (.isAfter (u/datetime->moment @backup-time)
+              (u/datetime->moment @change-time))))
+
+(defn backup-indicator []
+  (let [change-time  (re-frame/subscribe [:change-time])
+        backup-time  (re-frame/subscribe [:backup-time])
+        entries  (re-frame/subscribe [:entries])
+        backlog  (re-frame/subscribe [:backlog])]
+    [:div.ui.label
+     {:class (if (backup? backup-time change-time
+                          entries backlog)
+               "olive right corner"
+               "red right corner")}
+     [:i {:class (if (backup? backup-time change-time
+                              entries backlog)
+                   "check circle icon"
+                   "exclamation circle icon")}]]))
+
 (defn main-panel []
   (let [entries  (re-frame/subscribe [:entries])
         projects (re-frame/subscribe [:projects])
@@ -39,6 +64,7 @@
           {:style {:min-height "600px"}}
 
           [:h2 "Doing (" (count @entries) ")"]
+          [backup-indicator]
 
           [doing/entry-table entries]
 

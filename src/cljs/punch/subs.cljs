@@ -51,3 +51,13 @@
  :weekdate
  (fn [db]
    (:weekdate db)))
+
+(re-frame/reg-sub
+ :backup-time
+ (fn [db]
+   (:backup-time db)))
+
+(re-frame/reg-sub
+ :change-time
+ (fn [db]
+   (:change-time db)))

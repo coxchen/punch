@@ -60,7 +60,9 @@
              (assoc :versions (:versions stored-db))
              (assoc :username (:username stored-db))
              (assoc :secret   (:secret   stored-db))
-             (assoc :weekdate (:weekdate stored-db)))]
+             (assoc :weekdate (:weekdate stored-db))
+             (assoc :backup-time (:backup-time stored-db))
+             (assoc :change-time (:change-time stored-db)))]
      {:log [:initialize-db]
       :db initialized-db
       :save-db initialized-db})))
@@ -119,7 +121,7 @@
        :db  db
        :save-db db})))
 
-(def to-backup-keys [:versions :projects :entries :backlog])
+(def to-backup-keys [:versions :projects :entries :backlog :backup-time :change-time])
 
 (defn stamp-weekdate [db]
   (assoc db :weekdate (-> (u/this-moment) (u/moment->week-date))))
@@ -151,9 +153,9 @@
   :on-backup-resp
   (fn [cofx [_ result]]
     (let [stamp-db (stamp-backup (:db cofx))]
-      {:log [:on-backup-resp "result" result]})))
-;;        :db  db
-;;        :save-db db})))
+      {:log [:on-backup-resp "result" result]
+       :db  stamp-db
+       :save-db stamp-db})))
 
 (re-frame/reg-event-fx
   :on-backup-failed
@@ -171,7 +173,9 @@
   :add-entry
   (fn [cofx [_ entry]]
     (let [timed-entry (assoc entry :added (u/today))
-          db (update-in (:db cofx) [:entries] #(conj % timed-entry))]
+          db (-> (:db cofx)
+                 (update-in [:entries] #(conj % timed-entry))
+                 (stamp-change))]
       {:log [:add-entry (pr-str [(u/today) timed-entry])]
        :db  db
        :save-db db
@@ -203,10 +207,12 @@
   :post-action
   (fn [cofx [_ entryid weekday action action-comment]]
     (let [wd (keyword weekday)
-          db (update-in (:db cofx) [:entries entryid :logs wd]
-                        #(conj % (if (not-empty action-comment)
-                                   [(:text action) action-comment]
-                                   (:text action))))
+          db (-> (:db cofx)
+                 (update-in [:entries entryid :logs wd]
+                            #(conj % (if (not-empty action-comment)
+                                       [(:text action) action-comment]
+                                       (:text action))))
+                 (stamp-change))
           actions (get-in db [:entries entryid :logs wd])]
       {:log (str "entry "   entryid " | "
                  "weekday " (pr-str wd) " | "
@@ -219,7 +225,9 @@
 (re-frame/reg-event-fx
   :remove-action
   (fn [cofx [_ entry-idx day action-idx]]
-    (let [db (update-in (:db cofx) [:entries entry-idx :logs (keyword day)] #(vec-remove % action-idx))]
+    (let [db (-> (:db cofx)
+                 (update-in [:entries entry-idx :logs (keyword day)] #(vec-remove % action-idx))
+                 (stamp-change))]
       {:log [:remove-action entry-idx day action-idx]
        :db  db
        :save-db db})))
@@ -242,7 +250,9 @@
 (re-frame/reg-event-fx
   :remove-entry
   (fn [cofx [_ idx entry]]
-    (let [db (update-in (:db cofx) [:entries] #(vec-remove % idx))]
+    (let [db (-> (:db cofx)
+                 (update-in [:entries] #(vec-remove % idx))
+                 (stamp-change))]
       {:log [:remove-entry idx]
        :db  db
        :save-db db})))
@@ -261,7 +271,9 @@
 (re-frame/reg-event-fx
   :add-backlog
   (fn [cofx [_ entry]]
-    (let [db (update-in (:db cofx) [:backlog] #(conj % entry))]
+    (let [db (-> (:db cofx)
+                 (update-in [:backlog] #(conj % entry))
+                 (stamp-change))]
       {:log [:add-backlog entry]
        :db  db
        :save-db db
@@ -270,7 +282,9 @@
 (re-frame/reg-event-fx
   :remove-backlog
   (fn [cofx [_ idx entry]]
-    (let [db (update-in (:db cofx) [:backlog] #(vec-remove % idx))]
+    (let [db (-> (:db cofx)
+                 (update-in [:backlog] #(vec-remove % idx))
+                 (stamp-change))]
       {:log [:remove-backlog idx]
        :db  db
        :save-db db})))
@@ -296,8 +310,8 @@
     (let [timed-entry (assoc entry :added (u/today))
           db (-> (:db cofx)
                  (update-in [:backlog] #(vec-remove % idx))
-                 (update-in [:entries] #(conj % timed-entry)))]
-
+                 (update-in [:entries] #(conj % timed-entry))
+                 (stamp-change))]
       {:log [:move-backlog-to-doing timed-entry]
        :db  db
        :save-db db})))
@@ -307,19 +321,20 @@
   (fn [cofx [_ idx entry]]
     (let [db (-> (:db cofx)
                  ; (update-in [:entries] #(vec-remove % idx))
-                 (update-in [:backlog] #(conj % entry)))]
-
+                 (update-in [:backlog] #(conj % entry))
+                 (stamp-change))]
       {:log [:move-doing-to-backlog entry]
        :db  db
        :save-db db})))
 
 ;;;;;;;;;;;;;;;;;;;;
 
-
 (re-frame/reg-event-fx
   :new-project
   (fn [cofx [_ proj]]
-    (let [db (update-in (:db cofx) [:projects] #(conj % proj))]
+    (let [db (-> (:db cofx)
+                 (update-in [:projects] #(conj % proj))
+                 (stamp-change))]
       {:log [:new-project (pr-str proj)]
        :db  db
        :save-db db})))
@@ -327,7 +342,9 @@
 (re-frame/reg-event-fx
   :remove-project
   (fn [cofx [_ idx]]
-    (let [db (update-in (:db cofx) [:projects] #(vec-remove % idx))]
+    (let [db (-> (:db cofx)
+                 (update-in [:projects] #(vec-remove % idx))
+                 (stamp-change))]
       {:log [:remove-project (pr-str idx)]
        :db  db
        :save-db db})))
@@ -335,7 +352,9 @@
 (re-frame/reg-event-fx
   :new-version
   (fn [cofx [_ proj]]
-    (let [db (update-in (:db cofx) [:versions] #(conj % proj))]
+    (let [db (-> (:db cofx)
+                 (update-in [:versions] #(conj % proj))
+                 (stamp-change))]
       {:log [:new-version (pr-str proj)]
        :db  db
        :save-db db})))
@@ -343,7 +362,9 @@
 (re-frame/reg-event-fx
   :remove-version
   (fn [cofx [_ idx]]
-    (let [db (update-in (:db cofx) [:versions] #(vec-remove % idx))]
+    (let [db (-> (:db cofx)
+                 (update-in [:versions] #(vec-remove % idx))
+                 (stamp-change))]
       {:log [:remove-version (pr-str idx)]
        :db  db
        :save-db db})))

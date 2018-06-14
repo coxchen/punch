@@ -78,8 +78,6 @@
       :onClose #(re-frame/dispatch-sync [:close-entry-popup])}
      [new-entry-form]]))
 
-
-
 ;;;;;;;;;;;;;;;;;;;;
 ;; display entry
 
