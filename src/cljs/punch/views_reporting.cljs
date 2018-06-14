@@ -35,13 +35,18 @@
             ^{:key idx} [:div
                          (if (and (not= p "None") (not-empty p)) [:h4 "[project] " p])
                          [reporting-entries group-by-proj p include-log?]]))))
+(defn default-item []
+ [:ul [:li [:topic "None"]]])
 
-(defn reporting-items [items versions separatorText include-log?]
+(defn reporting-items [items versions title include-log?]
   (let [_ (.log js/console (pr-str (group-by :version @items)))
         group-by-ver (group-by :version @items)]
-    (into [:div [:h3 "-------------------- " separatorText " --------------------"]]
-          (for [[idx ver] (map-indexed (fn [idx itm] [idx itm]) (keys group-by-ver))]
-            ^{:key idx} [reporting-projects group-by-ver ver include-log?]))))
+    (into [:div
+            [:h3 "--------------------" title "--------------------"]]
+          (or (not-empty (for [[idx ver] (map-indexed (fn [idx itm] [idx itm]) (keys group-by-ver))]
+                          ^{:key idx} [reporting-projects group-by-ver ver include-log?]))
+              [[default-item]])
+    )))
 
 (defn reporting-problem []
   [:div
